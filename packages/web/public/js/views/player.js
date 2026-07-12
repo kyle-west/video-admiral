@@ -34,6 +34,9 @@ export function renderPlayer (app, { model, navigate, params }) {
       }, svgIcon('next', 34)) : null,
       seekBar,
       timeLabel,
+      el('button.icon-button', { type: 'button', 'aria-label': 'Start over',
+        onclick: () => { video.currentTime = 0; video.play() },
+      }, svgIcon('restart', 34)),
     ),
   )
 
