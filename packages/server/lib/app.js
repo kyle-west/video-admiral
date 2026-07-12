@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 
-const { staticDir } = require('@video-admiral/web')
+const { staticDir } = require('../../web')
 const { createLibrary } = require('./mediaFiles')
 const { createThumbnailer, placeholderSvg } = require('./thumbnails')
 
@@ -41,8 +41,8 @@ function createApp (config) {
   // --------------------------------------------------------------------
   // Video Serving — /video/<folder>/<file> with byte-range support
   // --------------------------------------------------------------------
-  app.get('/video/*mediaPath', (req, res) => {
-    const relativePath = req.params.mediaPath.join('/')
+  app.get('/video/*', (req, res) => {
+    const relativePath = req.params[0]
     const itemPath = library.resolveMediaPath(relativePath)
     if (!itemPath) {
       LOG_ITEM(`[404] ABORTING VIDEO REQUEST "${relativePath}"`)
@@ -86,8 +86,8 @@ function createApp (config) {
     stream.pipe(res)
   })
 
-  app.get('/thumbnail/*mediaPath', async (req, res) => {
-    const relativePath = req.params.mediaPath.join('/')
+  app.get('/thumbnail/*', async (req, res) => {
+    const relativePath = req.params[0]
     const itemPath = library.resolveMediaPath(relativePath)
     if (!itemPath) return res.sendStatus(404)
 
@@ -115,7 +115,7 @@ function createApp (config) {
   // Static Assets + SPA fallback
   // --------------------------------------------------------------------
   app.use(express.static(staticDir))
-  app.get('/{*any}', (req, res) => res.sendFile(path.join(staticDir, 'index.html')))
+  app.get('*', (req, res) => res.sendFile(path.join(staticDir, 'index.html')))
 
   return { app, LOG_ITEM }
 }

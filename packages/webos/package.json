@@ -7,8 +7,5 @@
     "build": "node build.js",
     "package": "npm run build && ares-package dist --outdir out"
   },
-  "license": "MIT",
-  "dependencies": {
-    "@video-admiral/web": "*"
-  }
+  "license": "MIT"
 }

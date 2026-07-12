@@ -26,7 +26,7 @@ function walkMediaFiles (root, dir = root, files = []) {
 
 // Scans are cached briefly so new files appear without a restart,
 // but browsing doesn't hit the disk on every request.
-const CACHE_TTL_MS = 30_000
+const CACHE_TTL_MS = 30 * 1000
 
 function createLibrary (mediaRoot) {
   let cache = null

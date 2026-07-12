@@ -17,7 +17,7 @@ const config = {
   thumbnailDir: resolve(process.env.THUMBNAIL_DIR || fileConfig.thumbnailDir || './thumbnails'),
   clientCanShutdownServer: process.env.ALLOW_SHUTDOWN
     ? process.env.ALLOW_SHUTDOWN === 'true'
-    : (fileConfig.clientCanShutdownServer ?? false),
+    : (fileConfig.clientCanShutdownServer !== undefined ? fileConfig.clientCanShutdownServer : false),
   log: fileConfig.log || null,
   ready: fileConfig.ready || null,
 }

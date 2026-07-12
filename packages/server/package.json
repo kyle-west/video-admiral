@@ -7,9 +7,5 @@
   "scripts": {
     "start": "node server.js"
   },
-  "license": "MIT",
-  "dependencies": {
-    "@video-admiral/web": "*",
-    "express": "^5.2.1"
-  }
+  "license": "MIT"
 }

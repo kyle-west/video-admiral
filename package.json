@@ -4,14 +4,17 @@
   "description": "A home media server organized purely by folder structure, with a TV-remote-friendly UI.",
   "private": true,
   "type": "commonjs",
-  "workspaces": [
-    "packages/*"
-  ],
+  "engines": {
+    "node": ">=12"
+  },
   "scripts": {
     "start": "node packages/server/server.js",
     "dev": "MEDIA_ROOT=./dev-media node packages/server/server.js",
     "make-dev-media": "node packages/cli/bin/video-admiral.js make-dev-media",
-    "build:webos": "npm run build --workspace @video-admiral/webos"
+    "build:webos": "node packages/webos/build.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
   },
   "license": "MIT"
 }

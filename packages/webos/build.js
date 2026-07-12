@@ -4,7 +4,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const { staticDir } = require('@video-admiral/web')
+const { staticDir } = require('../web')
 const { encodePng } = require('./lib/png')
 
 const DIST = path.join(__dirname, 'dist')
@@ -91,12 +91,32 @@ function bundleClassicScript () {
   return `(function () {\n'use strict';\n${parts.join('\n')}\n})();\n`
 }
 
-fs.rmSync(DIST, { recursive: true, force: true })
-fs.mkdirSync(DIST, { recursive: true })
-fs.cpSync(staticDir, DIST, { recursive: true })
+// Node 12 has neither fs.rmSync nor fs.cpSync, so remove/copy by hand.
+function removeDir (dir) {
+  if (!fs.existsSync(dir)) return
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) removeDir(full)
+    else fs.unlinkSync(full)
+  }
+  fs.rmdirSync(dir)
+}
+
+function copyDir (src, dest) {
+  fs.mkdirSync(dest, { recursive: true })
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const from = path.join(src, entry.name)
+    const to = path.join(dest, entry.name)
+    if (entry.isDirectory()) copyDir(from, to)
+    else fs.copyFileSync(from, to)
+  }
+}
+
+removeDir(DIST)
+copyDir(staticDir, DIST)
 
 // swap the module entrypoint for the bundled classic script
-fs.rmSync(path.join(DIST, 'js'), { recursive: true })
+removeDir(path.join(DIST, 'js'))
 fs.writeFileSync(path.join(DIST, 'app.js'), bundleClassicScript())
 const indexHtml = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8')
   .replace('<script type="module" src="/js/main.js"></script>', '<script src="app.js" defer></script>')

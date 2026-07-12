@@ -6,7 +6,8 @@ directory — no database, no metadata service.
 
 ## Packages
 
-This is an npm-workspaces monorepo:
+This is a monorepo of plain packages wired together with relative `require`s (no npm
+workspaces, so it installs and runs on Node 12 / npm 6 and anything newer):
 
 | package | what it is |
 |---|---|
@@ -35,10 +36,12 @@ stateless apart from a thumbnail cache.
 
 ## Running
 
+Requires Node 12 or newer.
+
 ```sh
 npm install
 MEDIA_ROOT=/path/to/your/videos npm start
-# or: npx video-admiral start --media-root /path/to/your/videos --port 5555
+# or: node packages/cli/bin/video-admiral.js start --media-root /path/to/your/videos --port 5555
 ```
 
 Configuration comes from env vars, CLI flags, or an optional `config.js`

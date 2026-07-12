@@ -6,8 +6,5 @@
   "bin": {
     "video-admiral": "bin/video-admiral.js"
   },
-  "license": "MIT",
-  "dependencies": {
-    "@video-admiral/server": "*"
-  }
+  "license": "MIT"
 }

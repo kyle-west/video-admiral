@@ -44,8 +44,8 @@ if (command === 'help' || args.help) {
   if (args.port) process.env.PORT = String(args.port)
   if (args.thumbnails) process.env.THUMBNAIL_DIR = path.resolve(args.thumbnails)
   if (args['allow-shutdown']) process.env.ALLOW_SHUTDOWN = 'true'
-  const config = require('@video-admiral/server/getConfig')
-  const { startServer } = require('@video-admiral/server/lib/app')
+  const config = require('../../server/getConfig')
+  const { startServer } = require('../../server/lib/app')
   startServer(config)
 } else if (command === 'make-dev-media') {
   const { makeDevMedia } = require('../lib/make-dev-media')
