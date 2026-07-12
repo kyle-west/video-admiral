@@ -13,7 +13,7 @@ workspaces, so it installs and runs on Node 12 / npm 6 and anything newer):
 |---|---|
 | [`@video-admiral/server`](packages/server) | Express server: folder scan, byte-range streaming, thumbnails, serves the web UI |
 | [`@video-admiral/web`](packages/web) | The UI — a no-build vanilla-JS SPA shared by the server and the TV app |
-| [`@video-admiral/cli`](packages/cli) | `video-admiral` command: `start`, `make-dev-media`, `help` |
+| [`@video-admiral/cli`](packages/cli) | `video-admiral` command: `start`, `thumbnail`, `make-dev-media`, `help` |
 | [`@video-admiral/webos`](packages/webos) | Packages the web UI as a native LG webOS TV app ([instructions](packages/webos/README.md)) |
 
 ## Features
@@ -55,7 +55,16 @@ Configuration comes from env vars, CLI flags, or an optional `config.js`
 | `ALLOW_SHUTDOWN` | `clientCanShutdownServer` | `false` | allow the client Shutdown Server button |
 
 Thumbnails are extracted with `ffmpeg` when it's installed; otherwise a generated SVG
-placeholder is served.
+placeholder is served. If the auto-picked frame is a dud, regenerate it from a
+timestamp of your choosing:
+
+```sh
+video-admiral thumbnail "The Dark Knight" 1:20      # frame at 1m20s
+video-admiral thumbnail "The Dark Knight" -1:20:29  # 1h20m29s before the end
+```
+
+`<movie>` is a path relative to the media root or a title search (it errors with the
+candidates if the search is ambiguous). Times are seconds, `MM:SS`, or `HH:MM:SS`.
 
 ## Endpoints
 

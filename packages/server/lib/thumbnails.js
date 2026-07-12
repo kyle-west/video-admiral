@@ -5,32 +5,38 @@ const { spawn, spawnSync } = require('child_process')
 
 const hasFfmpeg = spawnSync('ffmpeg', ['-version'], { stdio: 'ignore' }).status === 0
 
+function cachePathFor (thumbnailDir, relativePath) {
+  const hash = crypto.createHash('sha1').update(relativePath).digest('hex').slice(0, 16)
+  const base = path.basename(relativePath).replace(/\.\w+$/, '').replace(/[^\w\- ]+/g, '_')
+  return path.join(thumbnailDir, `${base}.${hash}.jpg`)
+}
+
+// Extracts a single frame as a JPEG. `fromEnd` seeks backwards from the end
+// of the file (ffmpeg's -sseof) instead of forwards from the start.
+function extractFrame (videoPath, outPath, seekSeconds, fromEnd) {
+  return new Promise((resolve, reject) => {
+    const seekArgs = fromEnd ? ['-sseof', String(-seekSeconds)] : ['-ss', String(seekSeconds)]
+    const args = seekArgs.concat(['-i', videoPath, '-frames:v', '1', '-vf', 'scale=480:-2', '-y', outPath])
+    const proc = spawn('ffmpeg', args, { stdio: 'ignore' })
+    proc.on('error', reject)
+    proc.on('close', () => {
+      if (fs.existsSync(outPath) && fs.statSync(outPath).size > 0) resolve(outPath)
+      else reject(new Error(`ffmpeg could not extract a frame from ${videoPath}`))
+    })
+  })
+}
+
 function createThumbnailer (thumbnailDir) {
   fs.mkdirSync(thumbnailDir, { recursive: true })
   const inFlight = new Map()
 
-  function cachePathFor (relativePath) {
-    const hash = crypto.createHash('sha1').update(relativePath).digest('hex').slice(0, 16)
-    const base = path.basename(relativePath).replace(/\.\w+$/, '').replace(/[^\w\- ]+/g, '_')
-    return path.join(thumbnailDir, `${base}.${hash}.jpg`)
-  }
-
   function generate (videoPath, outPath) {
     if (inFlight.has(outPath)) return inFlight.get(outPath)
-    const promise = new Promise((resolve, reject) => {
-      // Grab a frame a couple minutes in to skip title cards; retry near the
-      // start for videos shorter than that.
-      const attempt = (seekSeconds, onFail) => {
-        const args = ['-ss', String(seekSeconds), '-i', videoPath, '-frames:v', '1', '-vf', 'scale=480:-2', '-y', outPath]
-        const proc = spawn('ffmpeg', args, { stdio: 'ignore' })
-        proc.on('error', reject)
-        proc.on('close', () => {
-          if (fs.existsSync(outPath) && fs.statSync(outPath).size > 0) resolve(outPath)
-          else onFail()
-        })
-      }
-      attempt(120, () => attempt(3, () => reject(new Error(`ffmpeg could not extract a frame from ${videoPath}`))))
-    }).finally(() => inFlight.delete(outPath))
+    // Grab a frame a couple minutes in to skip title cards; retry near the
+    // start for videos shorter than that.
+    const promise = extractFrame(videoPath, outPath, 120, false)
+      .catch(() => extractFrame(videoPath, outPath, 3, false))
+      .finally(() => inFlight.delete(outPath))
     inFlight.set(outPath, promise)
     return promise
   }
@@ -38,7 +44,7 @@ function createThumbnailer (thumbnailDir) {
   // Resolves to a JPEG path, or null when thumbnails can't be generated
   // (the route falls back to an SVG placeholder).
   async function getThumbnail (relativePath, videoPath) {
-    const outPath = cachePathFor(relativePath)
+    const outPath = cachePathFor(thumbnailDir, relativePath)
     if (fs.existsSync(outPath) && fs.statSync(outPath).size > 0) return outPath
     if (!hasFfmpeg) return null
     try {
@@ -70,4 +76,4 @@ function placeholderSvg (relativePath) {
 </svg>`
 }
 
-module.exports = { createThumbnailer, placeholderSvg }
+module.exports = { createThumbnailer, placeholderSvg, cachePathFor, extractFrame, hasFfmpeg }
