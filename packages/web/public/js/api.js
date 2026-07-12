@@ -72,6 +72,12 @@ export function episodeTitle (file) {
   return displayTitle(file).replace(/^\d{1,2}[\s.\-–]+\s*/, '')
 }
 
+// "Adventure Time — Slumber Party Panic" for episodes inside a collection,
+// otherwise the plain title ("Batman Begins", "Inception").
+export function fullTitle (item) {
+  return item.top && item.sub ? `${item.top} — ${item.episodeTitle}` : item.title
+}
+
 export function encodePath (path) {
   return path.split('/').map(encodeURIComponent).join('/')
 }

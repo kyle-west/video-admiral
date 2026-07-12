@@ -1,4 +1,4 @@
-import { thumbUrl } from '../api.js'
+import { thumbUrl, fullTitle } from '../api.js'
 import { continueWatching, getHistory } from '../store.js'
 import { el, svgIcon, videoCard, formatRemaining } from '../ui.js'
 
@@ -10,7 +10,7 @@ export function renderHome (app, { model, navigate }) {
 
   if (watching.length) {
     rows.append(cardRow('Continue Watching', watching.map(({ item, entry }, index) => videoCard({
-      label: item.top || item.title,
+      label: fullTitle(item),
       thumbPath: item.path,
       progress: entry.d ? entry.t / entry.d : 0,
       autofocusCard: false,
@@ -53,8 +53,7 @@ function buildHero (model, watching, navigate) {
 
   const content = el('.hero-content')
   if (heroItem) {
-    const heroTitle = heroItem.top && heroItem.sub ? `${heroItem.top} — ${heroItem.episodeTitle}` : heroItem.title
-    content.append(el('h1.hero-title', {}, heroTitle))
+    content.append(el('h1.hero-title', {}, fullTitle(heroItem)))
     if (heroEntry) content.append(el('p.hero-subtitle', {}, formatRemaining(heroEntry)))
     content.append(el('button.primary-button', {
       type: 'button',

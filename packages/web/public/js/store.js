@@ -59,12 +59,19 @@ export function clearHistory () {
 
 export const isFinished = (entry) => entry.d > 0 && entry.t / entry.d > 0.95
 
-// Unfinished videos, most recent first.
+// Unfinished videos, most recent first — at most one per collection.
 export function continueWatching (model) {
+  const seen = new Set()
   return Object.entries(getHistory())
     .filter(([path, entry]) => model.byPath.has(path) && entry.t > 30 && !isFinished(entry))
     .sort(([, a], [, b]) => b.at - a.at)
     .map(([path, entry]) => ({ item: model.byPath.get(path), entry }))
+    .filter(({ item }) => {
+      const key = item.top || item.path
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
 }
 
 // The episode a collection's "Play Episode" button should target:
