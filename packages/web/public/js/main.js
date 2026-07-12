@@ -1,7 +1,7 @@
 import { loadLibrary, apiUrl, getServerBase, setServerBase, needsServerConfig } from './api.js'
 import { applyTheme } from './store.js'
 import { initSpatialNav, focusFirst } from './focus.js'
-import { el } from './ui.js'
+import { el, toggleFullscreen } from './ui.js'
 import { renderHome } from './views/home.js'
 import { renderFolder } from './views/folder.js'
 import { renderPlayer } from './views/player.js'
@@ -60,9 +60,13 @@ window.addEventListener('hashchange', () => {
 })
 
 // Escape, Backspace outside a text field, or the webOS remote's Back button
-// (keyCode 461) all act as "back"
+// (keyCode 461) all act as "back"; F toggles fullscreen
 document.addEventListener('keydown', (event) => {
   const typing = event.target instanceof HTMLInputElement && ['text', 'search'].includes(event.target.type)
+  if ((event.key === 'f' || event.key === 'F') && !typing && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    toggleFullscreen()
+    return
+  }
   if (event.key === 'Escape' || event.keyCode === 461 || (event.key === 'Backspace' && !typing)) {
     if (parseRoute().name !== 'home') {
       event.preventDefault()

@@ -1,10 +1,10 @@
 import { thumbUrl, fullTitle } from '../api.js'
 import { continueWatching, getHistory } from '../store.js'
-import { el, svgIcon, videoCard, formatRemaining } from '../ui.js'
+import { el, svgIcon, videoCard, formatRemaining, fullscreenButton } from '../ui.js'
 
 export function renderHome (app, { model, navigate }) {
   const watching = continueWatching(model)
-  const hero = buildHero(model, watching, navigate)
+  const { hero, dispose } = buildHero(model, watching, navigate)
 
   const rows = el('.rows')
 
@@ -39,6 +39,7 @@ export function renderHome (app, { model, navigate }) {
   }
 
   app.append(hero, rows)
+  return dispose
 }
 
 function buildHero (model, watching, navigate) {
@@ -75,7 +76,10 @@ function buildHero (model, watching, navigate) {
     onclick: () => navigate('#/search'),
   }, svgIcon('search', 30)))
 
-  return hero
+  const { button: fsButton, dispose } = fullscreenButton('.hero-fullscreen')
+  hero.append(fsButton)
+
+  return { hero, dispose }
 }
 
 function cardRow (heading, cards) {

@@ -1,6 +1,6 @@
 import { videoUrl, nextEpisode } from '../api.js'
 import { saveProgress, resumeTime } from '../store.js'
-import { el, svgIcon, backButton, formatTime } from '../ui.js'
+import { el, svgIcon, backButton, formatTime, fullscreenButton } from '../ui.js'
 
 const HIDE_CHROME_AFTER_MS = 3500
 
@@ -21,6 +21,7 @@ export function renderPlayer (app, { model, navigate, params }) {
 
   const seekBar = el('input.seek-bar', { type: 'range', min: 0, max: 100, step: 5, value: 0, 'aria-label': 'Seek' })
   const timeLabel = el('span.time-label', {}, '')
+  const { button: fsButton, dispose: disposeFsButton } = fullscreenButton('', 34)
 
   const chrome = el('.player-chrome', {},
     el('.player-top', {},
@@ -37,6 +38,7 @@ export function renderPlayer (app, { model, navigate, params }) {
       el('button.icon-button', { type: 'button', 'aria-label': 'Start over',
         onclick: () => { video.currentTime = 0; video.play() },
       }, svgIcon('restart', 34)),
+      fsButton,
     ),
   )
 
@@ -117,6 +119,7 @@ export function renderPlayer (app, { model, navigate, params }) {
     persist()
     clearInterval(persistTimer)
     clearTimeout(hideTimer)
+    disposeFsButton()
     document.removeEventListener('keydown', onActivity, true)
     document.removeEventListener('keydown', onKey)
     video.pause()

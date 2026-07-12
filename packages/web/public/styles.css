@@ -154,6 +154,7 @@ input:focus {
 
 .hero-settings { position: absolute; top: 24px; right: 32px; color: #fff; }
 .hero-search { position: absolute; bottom: 20px; right: 32px; color: #fff; }
+.hero-fullscreen { position: absolute; top: 24px; right: 88px; color: #fff; }
 
 /* ---------------------------------------------------------------- rows */
 .rows { padding: 16px 64px 72px; }

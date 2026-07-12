@@ -28,6 +28,8 @@ export function svgIcon (name, size = 24) {
     search: '<path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/>',
     eyeOff: '<path d="M12 6a9.8 9.8 0 0 1 9 6 9.9 9.9 0 0 1-2.2 3.1l1.4 1.4A11.9 11.9 0 0 0 23 12a11.8 11.8 0 0 0-14.9-5.7l1.6 1.6A9.9 9.9 0 0 1 12 6zM2.7 3.3 1.3 4.7l2.6 2.6A11.9 11.9 0 0 0 1 12a11.8 11.8 0 0 0 15.2 5.5l3.1 3.1 1.4-1.4L2.7 3.3zM12 18a9.8 9.8 0 0 1-9-6 9.9 9.9 0 0 1 2.5-3.4l2 2A4.5 4.5 0 0 0 12 16.5c.4 0 .8-.1 1.2-.2l1.5 1.5c-.9.1-1.8.2-2.7.2z"/>',
     power: '<path d="M13 3h-2v10h2V3zm5.6 2.4-1.4 1.4A7 7 0 1 1 5 12c0-1.9.8-3.7 2-5.2L5.6 5.4A9 9 0 1 0 21 12a9 9 0 0 0-2.4-6.6z"/>',
+    fullscreen: '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>',
+    fullscreenExit: '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>',
   }
   const wrap = document.createElement('span')
   wrap.className = 'icon'
@@ -53,6 +55,32 @@ export function videoCard ({ label, thumbPath, progress = null, onactivate, auto
 
 export function backButton (onclick) {
   return el('button.icon-button.back-button', { type: 'button', 'aria-label': 'Go back', onclick }, svgIcon('back', 34))
+}
+
+// The webkit-prefixed variants cover older webOS TVs.
+export function fullscreenActive () {
+  return Boolean(document.fullscreenElement || document.webkitFullscreenElement)
+}
+
+export function toggleFullscreen () {
+  const root = document.documentElement
+  if (fullscreenActive()) (document.exitFullscreen || document.webkitExitFullscreen).call(document)
+  else (root.requestFullscreen || root.webkitRequestFullscreen).call(root)
+}
+
+// Button whose icon tracks the fullscreen state. Callers must run dispose()
+// when the view is torn down.
+export function fullscreenButton (className = '', size = 30) {
+  const button = el(`button.icon-button${className}`, { type: 'button', 'aria-label': 'Toggle fullscreen', onclick: toggleFullscreen })
+  const update = () => button.replaceChildren(svgIcon(fullscreenActive() ? 'fullscreenExit' : 'fullscreen', size))
+  update()
+  document.addEventListener('fullscreenchange', update)
+  document.addEventListener('webkitfullscreenchange', update)
+  const dispose = () => {
+    document.removeEventListener('fullscreenchange', update)
+    document.removeEventListener('webkitfullscreenchange', update)
+  }
+  return { button, dispose }
 }
 
 let toastTimer
