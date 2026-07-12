@@ -2,8 +2,30 @@
 // Server payload: [ [folder, [{file, folder}]] ] — folder '' means loose files
 // at the media root.
 
+// ---------------------------------------------------------------------------
+// Server base URL. Empty when the UI is served by the media server itself;
+// set to e.g. "http://192.168.0.200:5555" when running as a packaged TV app.
+// ---------------------------------------------------------------------------
+const SERVER_KEY = 'va:server'
+
+export function getServerBase () {
+  return (localStorage.getItem(SERVER_KEY) || '').replace(/\/+$/, '')
+}
+
+export function setServerBase (url) {
+  let base = url.trim().replace(/\/+$/, '')
+  if (base && !/^https?:\/\//.test(base)) base = `http://${base}`
+  localStorage.setItem(SERVER_KEY, base)
+  return base
+}
+
+// Packaged apps (file://) have no same-origin server to talk to.
+export function needsServerConfig () {
+  return !getServerBase() && location.protocol === 'file:'
+}
+
 export async function loadLibrary () {
-  const res = await fetch('/data/videos')
+  const res = await fetch(`${getServerBase()}/data/videos`)
   if (!res.ok) throw new Error(`Failed to load library (${res.status})`)
   return buildModel(await res.json())
 }
@@ -54,8 +76,9 @@ export function encodePath (path) {
   return path.split('/').map(encodeURIComponent).join('/')
 }
 
-export const videoUrl = (path) => `/video/${encodePath(path)}`
-export const thumbUrl = (path) => `/thumbnail/${encodePath(path)}`
+export const videoUrl = (path) => `${getServerBase()}/video/${encodePath(path)}`
+export const thumbUrl = (path) => `${getServerBase()}/thumbnail/${encodePath(path)}`
+export const apiUrl = (path) => `${getServerBase()}${path}`
 
 // Ordered episodes of the folder an item lives in, for prev/next navigation.
 export function siblingsOf (model, item) {

@@ -1,0 +1,13 @@
+{
+  "name": "@video-admiral/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for the video-admiral media server.",
+  "type": "commonjs",
+  "bin": {
+    "video-admiral": "bin/video-admiral.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@video-admiral/server": "*"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@video-admiral/server",
+  "version": "0.1.0",
+  "description": "video-admiral media server: streams a folder of videos and serves the web UI.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@video-admiral/web": "*",
+    "express": "^5.2.1"
+  }
+}

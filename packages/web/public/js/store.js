@@ -34,8 +34,10 @@ export function saveSettings (patch) {
 
 export function applyTheme () {
   const { dark, accent } = getSettings()
+  const color = ACCENTS[accent] || ACCENTS.pink
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-  document.documentElement.style.setProperty('--accent', ACCENTS[accent] || ACCENTS.pink)
+  document.documentElement.style.setProperty('--accent', color)
+  document.documentElement.style.setProperty('--accent-glow', `${color}66`) // 40% alpha for the focus glow
 }
 
 // --------------------------------------------------------------------------

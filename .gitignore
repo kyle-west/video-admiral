@@ -3,3 +3,5 @@ dev-media/
 thumbnails/
 config.js
 nohup.out
+packages/webos/dist/
+packages/webos/out/

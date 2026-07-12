@@ -87,11 +87,24 @@ export function renderPlayer (app, { model, navigate, params }) {
   })
   seekBar.addEventListener('change', () => { seeking = false })
 
-  // Space toggles playback unless a button is focused (it would click it)
+  // Space toggles playback unless a button is focused (it would click it).
+  // The other codes are LG/webOS remote media keys.
   const onKey = (event) => {
     if (event.key === ' ' && !(document.activeElement instanceof HTMLButtonElement)) {
       event.preventDefault()
       video.paused ? video.play() : video.pause()
+    } else if (event.keyCode === 415 || event.key === 'MediaPlay') {
+      video.play()
+    } else if (event.keyCode === 19 || event.key === 'MediaPause') {
+      video.pause()
+    } else if (event.keyCode === 413 || event.key === 'MediaStop') {
+      navigate('back')
+    } else if (event.keyCode === 412 || event.key === 'MediaRewind') {
+      video.currentTime = Math.max(0, video.currentTime - 30)
+    } else if (event.keyCode === 417 || event.key === 'MediaFastForward') {
+      video.currentTime = Math.min(video.duration || Infinity, video.currentTime + 30)
+    } else if (event.key === 'MediaTrackNext' && next) {
+      navigate(`#/play/${encodeURIComponent(next.path)}`, { replace: true })
     }
   }
   document.addEventListener('keydown', onKey)

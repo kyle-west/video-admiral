@@ -2,15 +2,16 @@
   "name": "video-admiral",
   "version": "0.1.0",
   "description": "A home media server organized purely by folder structure, with a TV-remote-friendly UI.",
-  "main": "server.js",
+  "private": true,
   "type": "commonjs",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "start": "node server.js",
-    "dev": "MEDIA_ROOT=./dev-media node server.js",
-    "make-dev-media": "node scripts/make-dev-media.js"
+    "start": "node packages/server/server.js",
+    "dev": "MEDIA_ROOT=./dev-media node packages/server/server.js",
+    "make-dev-media": "node packages/cli/bin/video-admiral.js make-dev-media",
+    "build:webos": "npm run build --workspace @video-admiral/webos"
   },
-  "license": "MIT",
-  "dependencies": {
-    "express": "^5.2.1"
-  }
+  "license": "MIT"
 }

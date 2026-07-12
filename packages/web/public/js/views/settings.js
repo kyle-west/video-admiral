@@ -1,4 +1,5 @@
 import { ACCENTS, getSettings, saveSettings, clearHistory } from '../store.js'
+import { apiUrl, getServerBase } from '../api.js'
 import { el, svgIcon, toast, backButton } from '../ui.js'
 
 export function renderSettings (app, { navigate, serverSettings }) {
@@ -37,10 +38,21 @@ export function renderSettings (app, { navigate, serverSettings }) {
     systemButtons.push(el('button.wide-button', {
       type: 'button',
       onclick: async () => {
-        const res = await fetch('/cmd/shutdown-server', { method: 'POST' })
+        const res = await fetch(apiUrl('/cmd/shutdown-server'), { method: 'POST' })
         toast(res.ok ? 'Server shutting down…' : 'Server refused the shutdown request')
       },
     }, svgIcon('power', 26), 'Shutdown Server'))
+  }
+
+  // Packaged (TV) builds talk to a remote server; let the user re-point it.
+  if (getServerBase() || location.protocol === 'file:') {
+    systemButtons.push(el('button.wide-button', {
+      type: 'button',
+      onclick: () => {
+        localStorage.removeItem('va:server')
+        location.reload()
+      },
+    }, svgIcon('gear', 26), `Change Server (${getServerBase() || 'not set'})`))
   }
 
   app.append(

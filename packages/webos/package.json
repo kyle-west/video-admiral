@@ -1,0 +1,14 @@
+{
+  "name": "@video-admiral/webos",
+  "version": "0.1.0",
+  "description": "LG webOS TV packaging of the video-admiral web UI.",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node build.js",
+    "package": "npm run build && ares-package dist --outdir out"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@video-admiral/web": "*"
+  }
+}

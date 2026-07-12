@@ -1,18 +1,9 @@
-// Builds a small fake media library under ./dev-media by copying a sample mp4
-// into a folder structure that mirrors a real library. Pass a path to a sample
-// mp4 as the first arg, or place one at ./scripts/sample.mp4.
+// Builds a small fake media library by copying a sample mp4 into a folder
+// structure that mirrors a real one.
 const fs = require('fs')
 const path = require('path')
 
-const sample = path.resolve(process.argv[2] || path.join(__dirname, 'sample.mp4'))
-if (!fs.existsSync(sample)) {
-  console.error(`No sample video found at ${sample}. Pass a path to a small .mp4 as the first argument.`)
-  process.exit(1)
-}
-
-const root = path.resolve(__dirname, '..', 'dev-media')
-
-const structure = {
+const STRUCTURE = {
   'Adventure Time/Season 01': ['01 Slumber Party Panic', '02 Trouble in Lumpy Space', '03 Prisoners of Love', '05 The Enchiridion', '08 Business Time'],
   'Adventure Time/Season 02': ['01 Loyalty to the King', '02 Blood Under the Skin', '03 It Came from the Nightosphere'],
   'Adventure Time/Season 03': ['01 Conquest of Cuteness', '02 Morituri Te Salutamus'],
@@ -25,13 +16,23 @@ const structure = {
   '': ["Howl's Moving Castle", 'Inception', 'The Muppets Take Manhattan', 'Superman Returns'],
 }
 
-for (const [folder, titles] of Object.entries(structure)) {
-  const dir = path.join(root, folder)
-  fs.mkdirSync(dir, { recursive: true })
-  for (const title of titles) {
-    const dest = path.join(dir, `${title}.m4v`)
-    if (!fs.existsSync(dest)) fs.copyFileSync(sample, dest)
+function makeDevMedia ({ out, sample } = {}) {
+  const samplePath = path.resolve(sample || path.join(__dirname, '..', 'assets', 'sample.mp4'))
+  if (!fs.existsSync(samplePath)) {
+    console.error(`No sample video found at ${samplePath}.`)
+    process.exit(1)
   }
+  const root = path.resolve(out || './dev-media')
+
+  for (const [folder, titles] of Object.entries(STRUCTURE)) {
+    const dir = path.join(root, folder)
+    fs.mkdirSync(dir, { recursive: true })
+    for (const title of titles) {
+      const dest = path.join(dir, `${title}.m4v`)
+      if (!fs.existsSync(dest)) fs.copyFileSync(samplePath, dest)
+    }
+  }
+  console.log(`Dev media library created at ${root}`)
 }
 
-console.log(`Dev media library created at ${root}`)
+module.exports = { makeDevMedia }

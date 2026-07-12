@@ -1,0 +1,8 @@
+{
+  "name": "@video-admiral/web",
+  "version": "0.1.0",
+  "description": "video-admiral web UI: a no-build SPA with TV-remote spatial navigation.",
+  "main": "index.js",
+  "type": "commonjs",
+  "license": "MIT"
+}
