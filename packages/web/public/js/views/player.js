@@ -1,8 +1,13 @@
-import { videoUrl, nextEpisode } from '../api.js'
+import { videoUrl, scrubUrl, nextEpisode } from '../api.js'
 import { saveProgress, resumeTime } from '../store.js'
 import { el, svgIcon, backButton, formatTime, fullscreenButton } from '../ui.js'
 
 const HIDE_CHROME_AFTER_MS = 3500
+
+// Must match the sprite the server builds (see server/lib/thumbnails.js).
+const SCRUB_COLS = 10
+const SCRUB_ROWS = 10
+const SCRUB_RETRY_MS = 8000
 
 export function renderPlayer (app, { model, navigate, params }) {
   const item = model.byPath.get(params.path)
@@ -42,8 +47,50 @@ export function renderPlayer (app, { model, navigate, params }) {
     ),
   )
 
-  const stage = el('.player-stage', {}, video, chrome)
+  const scrubFrame = el('.scrub-frame')
+  const scrubTime = el('span.scrub-time')
+  const scrubPreview = el('.scrub-preview', {}, scrubFrame, scrubTime)
+
+  const stage = el('.player-stage', {}, video, chrome, scrubPreview)
   app.append(stage)
+
+  // ---- scrub preview ----------------------------------------------------
+  // One sprite JPEG holds the whole timeline; hovering just moves the
+  // background-position, so previews cost nothing after the initial fetch.
+  let sprite = null
+  let spriteUrl = null
+  let spriteRetryTimer
+  const loadSprite = async () => {
+    try {
+      const res = await fetch(scrubUrl(item.path))
+      if (res.status === 202) { spriteRetryTimer = setTimeout(loadSprite, SCRUB_RETRY_MS); return }
+      if (!res.ok) return
+      spriteUrl = URL.createObjectURL(await res.blob())
+      const img = new Image()
+      img.onload = () => {
+        sprite = { tileW: img.naturalWidth / SCRUB_COLS, tileH: img.naturalHeight / SCRUB_ROWS }
+        scrubFrame.style.backgroundImage = `url("${spriteUrl}")`
+        scrubFrame.style.width = `${sprite.tileW}px`
+        scrubFrame.style.height = `${sprite.tileH}px`
+      }
+      img.src = spriteUrl
+    } catch { /* no preview, the seek bar still works */ }
+  }
+  loadSprite()
+
+  const showScrubPreview = (clientX) => {
+    if (!sprite || !video.duration) return
+    const rect = seekBar.getBoundingClientRect()
+    const fraction = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
+    const index = Math.min(SCRUB_COLS * SCRUB_ROWS - 1, Math.floor(fraction * SCRUB_COLS * SCRUB_ROWS))
+    scrubFrame.style.backgroundPosition = `${-(index % SCRUB_COLS) * sprite.tileW}px ${-Math.floor(index / SCRUB_COLS) * sprite.tileH}px`
+    scrubTime.textContent = formatTime(fraction * video.duration)
+    const half = sprite.tileW / 2 + 8
+    scrubPreview.style.left = `${Math.max(half, Math.min(window.innerWidth - half, clientX))}px`
+    scrubPreview.classList.add('visible')
+  }
+  seekBar.addEventListener('pointermove', (event) => showScrubPreview(event.clientX))
+  seekBar.addEventListener('pointerleave', () => scrubPreview.classList.remove('visible'))
 
   // ---- progress persistence -------------------------------------------
   const persist = () => {
@@ -119,6 +166,8 @@ export function renderPlayer (app, { model, navigate, params }) {
     persist()
     clearInterval(persistTimer)
     clearTimeout(hideTimer)
+    clearTimeout(spriteRetryTimer)
+    if (spriteUrl) URL.revokeObjectURL(spriteUrl)
     disposeFsButton()
     document.removeEventListener('keydown', onActivity, true)
     document.removeEventListener('keydown', onKey)

@@ -84,6 +84,7 @@ export function encodePath (path) {
 
 export const videoUrl = (path) => `${getServerBase()}/video/${encodePath(path)}`
 export const thumbUrl = (path) => `${getServerBase()}/thumbnail/${encodePath(path)}`
+export const scrubUrl = (path) => `${getServerBase()}/scrub/${encodePath(path)}`
 export const apiUrl = (path) => `${getServerBase()}${path}`
 
 // Ordered episodes of the folder an item lives in, for prev/next navigation.

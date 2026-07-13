@@ -97,6 +97,22 @@ function createApp (config) {
     res.type('image/svg+xml').send(placeholderSvg(relativePath))
   })
 
+  // Scrub-preview sprite for the player's seek bar. 202 while ffmpeg is
+  // still building it — the client just retries a bit later.
+  app.get('/scrub/*', (req, res) => {
+    const relativePath = req.params[0]
+    const itemPath = library.resolveMediaPath(relativePath)
+    if (!itemPath) return res.sendStatus(404)
+
+    const sprite = thumbnailer.getScrubSprite(relativePath, itemPath)
+    if (sprite.status === 'ready') {
+      res.set('Cache-Control', 'public, max-age=86400')
+      return res.sendFile(sprite.path)
+    }
+    if (sprite.status === 'pending') LOG_ITEM(`[202] BUILDING SCRUB SPRITE for "${relativePath}"`)
+    res.sendStatus(sprite.status === 'pending' ? 202 : 404)
+  })
+
   // --------------------------------------------------------------------
   // Command Services
   // --------------------------------------------------------------------
